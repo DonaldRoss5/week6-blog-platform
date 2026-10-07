@@ -1,122 +1,60 @@
-import { useState } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import './App.css'
+import { Route, Routes } from "react-router-dom";
+import AppLayout from "./layouts/AppLayout.jsx";
+import ProtectedRoute from "./components/routing/ProtectedRoute.jsx";
+import GuestOnlyRoute from "./components/routing/GuestOnlyRoute.jsx";
+import HomePage from "./pages/HomePage.jsx";
+import BlogDetailPage from "./pages/BlogDetailPage.jsx";
+import LoginPage from "./pages/LoginPage.jsx";
+import RegisterPage from "./pages/RegisterPage.jsx";
+import MyBlogsPage from "./pages/MyBlogsPage.jsx";
+import NewBlogPage from "./pages/NewBlogPage.jsx";
+import EditBlogPage from "./pages/EditBlogPage.jsx";
+import NotFoundPage from "./pages/NotFoundPage.jsx";
+import { useAuth } from "./hooks/useAuth.js";
 
 function App() {
-  const [count, setCount] = useState(0)
+  const { user, loading, signIn, signUp, signOut } = useAuth();
+
+  if (loading) {
+    return (
+      <main className="session-loading" aria-live="polite">
+        <span className="session-loading__spinner" aria-hidden="true" />
+        <p>Restoring your session...</p>
+      </main>
+    );
+  }
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+    <Routes>
+      <Route element={<AppLayout user={user} onSignOut={signOut} />}>
+        {/* Public routes */}
+        <Route index element={<HomePage user={user} />} />
+        <Route
+          path="blogs/:blogId"
+          element={<BlogDetailPage userId={user?.id} />}
+        />
 
-      <div className="ticks"></div>
+        {/* Logged-out only: logged-in users are redirected away */}
+        <Route element={<GuestOnlyRoute user={user} />}>
+          <Route path="login" element={<LoginPage onSignIn={signIn} />} />
+          <Route path="register" element={<RegisterPage onSignUp={signUp} />} />
+        </Route>
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+        {/* Logged-in only: logged-out users are sent to /login */}
+        <Route element={<ProtectedRoute user={user} />}>
+          <Route path="my-blogs" element={<MyBlogsPage userId={user?.id} />} />
+          <Route path="blogs/new" element={<NewBlogPage user={user} />} />
+          <Route
+            path="blogs/:blogId/edit"
+            element={<EditBlogPage userId={user?.id} />}
+          />
+        </Route>
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+        {/* Always keep the 404 route last */}
+        <Route path="*" element={<NotFoundPage />} />
+      </Route>
+    </Routes>
+  );
 }
 
-export default App
+export default App;
