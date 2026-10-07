@@ -1,81 +1,112 @@
-import { useState } from "react";
+import { useId, useState } from 'react'
 
-function AuthForm({ onSignIn, onSignUp }) {
-  const [mode, setMode] = useState("sign-in");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState("");
-
-  const isSignUp = mode === "sign-up";
-
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-    setSubmitting(true);
-    setError("");
-
-    try {
-      if (isSignUp) {
-        await onSignUp(email, password);
-      } else {
-        await onSignIn(email, password);
-      }
-    } catch (authError) {
-      setError(authError.message);
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  const changeMode = () => {
-    setMode((currentMode) =>
-      currentMode === "sign-in" ? "sign-up" : "sign-in",
-    );
-    setError("");
-  };
-
-  return (
-    <section className="auth-card">
-      <h2>{isSignUp ? "Create account" : "Log in"}</h2>
-
-      <form onSubmit={handleSubmit}>
-        <label htmlFor="email">Email</label>
-        <input
-          id="email"
-          type="email"
-          value={email}
-          onChange={(event) => setEmail(event.target.value)}
-          autoComplete="email"
-          required
-        />
-
-        <label htmlFor="password">Password</label>
-        <input
-          id="password"
-          type="password"
-          value={password}
-          onChange={(event) => setPassword(event.target.value)}
-          autoComplete={isSignUp ? "new-password" : "current-password"}
-          minLength={6}
-          required
-        />
-
-        <button type="submit" disabled={submitting}>
-          {submitting ? "Please wait…" : isSignUp ? "Create account" : "Log in"}
-        </button>
-
-        {error && <p role="alert">{error}</p>}
-      </form>
-
-      <button type="button" onClick={changeMode}>
-        {isSignUp
-          ? "Already have an account? Log in"
-          : "Need an account? Register"}
-      </button>
-    </section>
-  );
+const COPY = {
+  login: { submit: 'Log in', busy: 'Logging in...' },
+  register: { submit: 'Create account', busy: 'Creating account...' },
 }
 
-export default AuthForm;
+function AuthForm({ mode = 'login', onSubmit }) {
+  const id = useId()
+  const isRegister = mode === 'register'
+  const copy = COPY[mode] ?? COPY.login
 
-/** has same functionality as LoginPage which be render into a companent (AuthForm.jsx) */
+  const [displayName, setDisplayName] = useState('')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState('')
+  const [notice, setNotice] = useState('')
+  const [submitting, setSubmitting] = useState(false)
+
+  async function handleSubmit(event) {
+    event.preventDefault()
+    setError('')
+    setNotice('')
+
+    const values = {
+      displayName: displayName.trim(),
+      email: email.trim(),
+      password,
+    }
+
+    if (isRegister && values.displayName.length < 2) {
+      setError('Display name must be at least 2 characters.')
+      return
+    }
+    if (!values.email || !values.password) {
+      setError('Email and password are required.')
+      return
+    }
+    if (isRegister && values.password.length < 6) {
+      setError('Password must be at least 6 characters.')
+      return
+    }
+
+    setSubmitting(true)
+    try {
+      const result = await onSubmit(values)
+      if (result?.notice) {
+        setNotice(result.notice)
+      }
+    } catch (err) {
+      setError(err.message || 'Something went wrong. Please try again.')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  return (
+    <form className="auth-form" onSubmit={handleSubmit} noValidate>
+      {isRegister && (
+        <div className="auth-form__field">
+          <label htmlFor={`${id}-name`}>Display name</label>
+          <input
+            id={`${id}-name`}
+            type="text"
+            autoComplete="nickname"
+            value={displayName}
+            onChange={(event) => setDisplayName(event.target.value)}
+          />
+        </div>
+      )}
+
+      <div className="auth-form__field">
+        <label htmlFor={`${id}-email`}>Email</label>
+        <input
+          id={`${id}-email`}
+          type="email"
+          autoComplete="email"
+          value={email}
+          onChange={(event) => setEmail(event.target.value)}
+        />
+      </div>
+
+      <div className="auth-form__field">
+        <label htmlFor={`${id}-password`}>Password</label>
+        <input
+          id={`${id}-password`}
+          type="password"
+          autoComplete={isRegister ? 'new-password' : 'current-password'}
+          value={password}
+          onChange={(event) => setPassword(event.target.value)}
+        />
+      </div>
+
+           {error && (
+        <p className="auth-form__feedback auth-form__feedback--error" role="alert">
+          {error}
+        </p>
+      )}
+      {notice && (
+        <p className="auth-form__feedback auth-form__feedback--success" role="status">
+          {notice}
+        </p>
+      )}
+
+      <button className="auth-form__submit" type="submit" disabled={submitting}>
+        {submitting ? copy.busy : copy.submit}
+      </button>
+    </form>
+  )
+}
+
+export default AuthForm
