@@ -17,7 +17,7 @@ function renderLoginPage(onSignIn) {
 
           state: {
             from: {
-              pathname: "/tasks/7/edit",
+              pathname: "/blogs/7/edit",
             },
           },
         },
@@ -27,7 +27,7 @@ function renderLoginPage(onSignIn) {
         <Route path="/login" element={<LoginPage onSignIn={onSignIn} />} />
 
         <Route
-          path="/tasks/:taskId/edit"
+          path="/blogs/:blogId/edit"
           element={<h1>Requested edit page</h1>}
         />
       </Routes>
