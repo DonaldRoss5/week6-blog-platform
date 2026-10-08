@@ -1,0 +1,115 @@
+@use "./variables" as *;
+
+.page {
+  width: 100%;
+
+  &__header {
+    margin-bottom: $space-xl;
+  }
+
+  &__title {
+    margin: 0 0 $space-sm;
+    color: $color-text-main;
+    font-size: clamp(1.5rem, 5vw, 2.25rem);
+  }
+
+  &__description {
+    max-width: 65ch;
+    margin: 0;
+    color: $color-text-muted;
+    line-height: 1.7;
+  }
+}
+
+.home-page,
+.not-found-page {
+  min-height: 60vh;
+  display: grid;
+  align-content: center;
+  justify-items: start;
+
+  &__title {
+    margin: 0 0 $space-md;
+    font-size: clamp(2rem, 8vw, 4rem);
+    line-height: 1.05;
+  }
+
+  &__description {
+    max-width: 55ch;
+    margin: 0 0 $space-xl;
+    color: $color-text-muted;
+    line-height: 1.7;
+  }
+
+  &__action {
+    display: inline-flex;
+    min-height: 44px;
+    align-items: center;
+    padding: $space-sm $space-lg;
+    border-radius: $radius-md;
+    background-color: $color-accent;
+    color: #052e16;
+    font-weight: 700;
+    text-decoration: none;
+
+    &:hover {
+      background-color: $color-accent-hover;
+    }
+
+    &:focus-visible {
+      outline: 3px solid $color-focus;
+      outline-offset: 3px;
+    }
+  }
+}
+
+.loading-state,
+.empty-state {
+  min-height: 220px;
+  display: grid;
+  place-items: center;
+  padding: $space-xl;
+  border: 1px dashed $color-border-soft;
+  border-radius: $radius-lg;
+  color: $color-text-muted;
+  text-align: center;
+}
+
+.loading-state {
+  gap: $space-sm;
+}
+
+.empty-state {
+  strong {
+    display: block;
+    margin-bottom: $space-xs;
+    color: $color-text-main;
+  }
+
+  p {
+    margin: 0;
+  }
+}
+
+.home-page__action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: $space-sm $space-lg;
+  border-radius: $radius-md;
+  background-color: $color-accent;
+  color: #052e16;
+  font-weight: 700;
+  text-decoration: none;
+
+  &:hover {
+    background-color: $color-accent-hover;
+    color: #052e16;
+  }
+
+  &:focus-visible {
+    outline: 3px solid $color-focus;
+    outline-offset: 3px;
+  }
+}
